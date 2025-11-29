@@ -10,6 +10,37 @@ defmodule Kantox.CashierServiceTest do
     {:ok, _sr1} = Products.create(%{name: "Strawberries", code: "SR1", price: 5.00})
     {:ok, _cf1} = Products.create(%{name: "Coffee", code: "CF1", price: 11.23})
 
+    # Create test offers
+    {:ok, _offer_1} =
+      Kantox.Offers.create(%{
+        product_code: "GR1",
+        offer_type: "get_one_get_one_free",
+        params: %{qty: 2, price: 3.11},
+        active: true,
+        starts_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        ends_at: DateTime.utc_now() |> DateTime.add(7, :day) |> DateTime.truncate(:second)
+      })
+
+    {:ok, _offer_2} =
+      Kantox.Offers.create(%{
+        product_code: "SR1",
+        offer_type: "bulk",
+        params: %{qty: 3, price: 4.50},
+        active: true,
+        starts_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        ends_at: DateTime.utc_now() |> DateTime.add(7, :day) |> DateTime.truncate(:second)
+      })
+
+    {:ok, _offer_3} =
+      Kantox.Offers.create(%{
+        product_code: "CF1",
+        offer_type: "take_3_pay_for_2",
+        params: %{qty: 3, price: 22.46},
+        active: true,
+        starts_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        ends_at: DateTime.utc_now() |> DateTime.add(7, :day) |> DateTime.truncate(:second)
+      })
+
     :ok
   end
 

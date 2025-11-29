@@ -1,40 +1,33 @@
 defmodule Kantox.Offer do
-  defstruct [
-    :id,
-    :qty,
-    :fun
-  ]
+  use Ecto.Schema
 
-  def new(id, fun) do
-    %Kantox.Offer{
-      id: id,
-      fun: fun
-    }
+  schema "offers" do
+    field :product_code, :string
+    field :offer_type, :string
+    field :params, :map
+    field :active, :boolean
+    field :starts_at, :utc_datetime
+    field :ends_at, :utc_datetime
+    timestamps()
   end
 
-  def all() do
-    [
-      new("GR1", fn qty, product ->
-        paid_qty = div(qty + 1, 2)
-        Decimal.mult(product.price, paid_qty)
-      end),
-      new("SR1", fn qty, product ->
-        if qty >= 3 do
-          Decimal.mult(Decimal.new("4.50"), qty)
-        else
-          Decimal.mult(product.price, qty)
-        end
-      end),
-      new("CF1", fn qty, product ->
-        if qty >= 3 do
-          Decimal.mult(
-            product.price,
-            Decimal.mult(Decimal.new(qty), Decimal.div(Decimal.new(2), Decimal.new(3)))
-          )
-        else
-          Decimal.mult(product.price, qty)
-        end
-      end)
-    ]
+  def changeset(offer, attrs) do
+    offer
+    |> Ecto.Changeset.cast(attrs, [
+      :product_code,
+      :offer_type,
+      :params,
+      :active,
+      :starts_at,
+      :ends_at
+    ])
+    |> Ecto.Changeset.validate_required([
+      :product_code,
+      :offer_type,
+      :params,
+      :active,
+      :starts_at,
+      :ends_at
+    ])
   end
 end
