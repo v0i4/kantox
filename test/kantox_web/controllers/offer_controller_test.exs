@@ -78,5 +78,93 @@ defmodule KantoxWeb.OfferControllerTest do
       assert Enum.all?(data, fn offer -> offer["active"] == true end)
     end
   end
+
+  describe "POST /api/offers" do
+    test "creates a new offer with valid data", %{conn: conn} do
+      offer_params = %{
+        product_code: "CF1",
+        offer_type: "take_3_pay_for_2",
+        params: %{qty: 3},
+        active: true,
+        starts_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        ends_at: DateTime.utc_now() |> DateTime.add(14, :day) |> DateTime.truncate(:second)
+      }
+
+      conn = post(conn, ~p"/api/offers", offer: offer_params)
+
+      assert response = json_response(conn, 201)
+      assert response["id"]
+      assert response["product_code"] == "CF1"
+      assert response["offer_type"] == "take_3_pay_for_2"
+      assert response["params"]["qty"] == 3
+      assert response["active"] == true
+      assert response["starts_at"]
+      assert response["ends_at"]
+    end
+
+    test "creates a bulk offer", %{conn: conn} do
+      offer_params = %{
+        product_code: "TEST1",
+        offer_type: "bulk",
+        params: %{qty: 5, price: 10.00},
+        active: true,
+        starts_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        ends_at: DateTime.utc_now() |> DateTime.add(30, :day) |> DateTime.truncate(:second)
+      }
+
+      conn = post(conn, ~p"/api/offers", offer: offer_params)
+
+      assert response = json_response(conn, 201)
+      assert response["offer_type"] == "bulk"
+      assert response["params"]["qty"] == 5
+      assert response["params"]["price"] == 10.00
+    end
+
+    test "returns error with invalid data", %{conn: conn} do
+      offer_params = %{
+        product_code: "",
+        offer_type: "",
+        params: nil,
+        active: true,
+        starts_at: nil,
+        ends_at: nil
+      }
+
+      conn = post(conn, ~p"/api/offers", offer: offer_params)
+
+      assert response = json_response(conn, 400)
+      assert response["errors"]
+      assert response["errors"]["product_code"]
+      assert response["errors"]["offer_type"]
+    end
+
+    test "returns error with missing required fields", %{conn: conn} do
+      offer_params = %{
+        product_code: "TEST2",
+        offer_type: "bulk"
+      }
+
+      conn = post(conn, ~p"/api/offers", offer: offer_params)
+
+      assert response = json_response(conn, 400)
+      assert response["errors"]
+    end
+
+    test "creates inactive offer", %{conn: conn} do
+      offer_params = %{
+        product_code: "INACTIVE1",
+        offer_type: "get_one_get_one_free",
+        params: %{qty: 2},
+        active: false,
+        starts_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        ends_at: DateTime.utc_now() |> DateTime.add(7, :day) |> DateTime.truncate(:second)
+      }
+
+      conn = post(conn, ~p"/api/offers", offer: offer_params)
+
+      assert response = json_response(conn, 201)
+      assert response["active"] == false
+    end
+  end
 end
 

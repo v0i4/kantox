@@ -12,6 +12,8 @@ defmodule KantoxWeb.Router do
     get "/offers", OfferController, :index
     get "/products", ProductController, :index
     post "/baskets", BasketController, :process
+    post "/products", ProductController, :create
+    post "/offers", OfferController, :create
   end
 
   # Catch-all route for root

@@ -51,5 +51,80 @@ defmodule KantoxWeb.ProductControllerTest do
       assert cf1["price"] == 11.23
     end
   end
+
+  describe "POST /api/products" do
+    test "creates a new product with valid data", %{conn: conn} do
+      product_params = %{
+        name: "Orange Juice",
+        code: "OJ1",
+        price: 7.50
+      }
+
+      conn = post(conn, ~p"/api/products", product: product_params)
+
+      assert response = json_response(conn, 201)
+      assert response["id"]
+      assert response["name"] == "Orange Juice"
+      assert response["code"] == "OJ1"
+      assert response["price"] == 7.50
+    end
+
+    test "returns error with invalid data", %{conn: conn} do
+      product_params = %{
+        name: "",
+        code: "",
+        price: nil
+      }
+
+      conn = post(conn, ~p"/api/products", product: product_params)
+
+      assert response = json_response(conn, 400)
+      assert response["errors"]
+      assert response["errors"]["name"]
+      assert response["errors"]["code"]
+      assert response["errors"]["price"]
+    end
+
+    test "returns error with missing fields", %{conn: conn} do
+      product_params = %{
+        name: "Incomplete Product"
+      }
+
+      conn = post(conn, ~p"/api/products", product: product_params)
+
+      assert response = json_response(conn, 400)
+      assert response["errors"]
+      assert response["errors"]["code"]
+      assert response["errors"]["price"]
+    end
+
+    test "returns error with duplicate code", %{conn: conn} do
+      product_params = %{
+        name: "Duplicate Green Tea",
+        code: "GR1",
+        price: 3.50
+      }
+
+      conn = post(conn, ~p"/api/products", product: product_params)
+
+      assert response = json_response(conn, 400)
+      assert response["errors"]
+      assert response["errors"]["code"]
+    end
+
+    test "returns error with negative price", %{conn: conn} do
+      product_params = %{
+        name: "Invalid Product",
+        code: "INV1",
+        price: -5.00
+      }
+
+      conn = post(conn, ~p"/api/products", product: product_params)
+
+      assert response = json_response(conn, 400)
+      assert response["errors"]
+      assert response["errors"]["price"]
+    end
+  end
 end
 
