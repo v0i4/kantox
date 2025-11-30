@@ -8,6 +8,16 @@ defmodule KantoxWeb.Router do
   scope "/api", KantoxWeb do
     pipe_through :api
 
-    # Add your API routes here
+    get "/health", HealthController, :index
+    get "/offers", OfferController, :index
+    get "/products", ProductController, :index
+    post "/baskets", BasketController, :process
+  end
+
+  # Catch-all route for root
+  scope "/", KantoxWeb do
+    pipe_through :api
+
+    get "/", HealthController, :index
   end
 end

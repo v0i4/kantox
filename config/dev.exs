@@ -50,10 +50,16 @@ config :kantox, KantoxWeb.Endpoint,
 # different ports.
 
 # Enable code reloader
-config :kantox, KantoxWeb.Endpoint, code_reloader: true
+# config :kantox, KantoxWeb.Endpoint, code_reloader: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"
+
+# Filter out LiveReload websocket requests (legacy from API-only conversion)
+config :logger, :console,
+  format: "[$level] $message\n",
+  metadata: :all
+config :logger, level: :info
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
