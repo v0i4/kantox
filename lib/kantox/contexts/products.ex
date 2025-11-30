@@ -5,6 +5,7 @@ defmodule Kantox.Products do
 
   alias Kantox.Repo
   alias Kantox.Product
+  alias Kantox.ProductsCache
 
   @doc """
   Creates a product.
@@ -16,9 +17,15 @@ defmodule Kantox.Products do
 
   """
   def create(attrs \\ %{}) do
-    %Product{}
-    |> Product.changeset(attrs)
-    |> Repo.insert()
+    with {:ok, product} <-
+           %Product{}
+           |> Product.changeset(attrs)
+           |> Repo.insert() do
+      ProductsCache.update_products(product.code)
+      {:ok, product}
+    else
+      {:error, changeset} -> {:error, changeset}
+    end
   end
 
   @doc """
@@ -64,5 +71,11 @@ defmodule Kantox.Products do
   """
   def all do
     Repo.all(Product)
+  end
+
+  def get_all_product_codes() do
+    all()
+    |> Enum.map(fn product -> product.code end)
+    |> Enum.to_list()
   end
 end
