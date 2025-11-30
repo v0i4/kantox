@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kantox_prod
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # Mapped to 5433 to avoid conflict with local PostgreSQL
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "ecto://postgres:postgres@db:5432/kantox_prod"
+      SECRET_KEY_BASE: "your-secret-key-base-generate-with-mix-phx-gen-secret"
+      PHX_HOST: "localhost"
+      PHX_SERVER: "true"
+      PORT: "4000"
+    ports:
+      - "4000:4000"
+    command: >
+      sh -c "
+        /app/bin/kantox eval 'Kantox.Release.migrate' &&
+        /app/bin/server
+      "
+
+volumes:
+  postgres_data:
+

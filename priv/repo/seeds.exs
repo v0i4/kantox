@@ -21,3 +21,21 @@ Kantox.Repo.insert!(%Kantox.Offer{
   starts_at: DateTime.utc_now() |> DateTime.truncate(:second),
   ends_at: DateTime.utc_now() |> DateTime.add(7, :day) |> DateTime.truncate(:second)
 })
+
+Kantox.Repo.insert!(%Kantox.Offer{
+  product_code: "SR1",
+  offer_type: "bulk",
+  params: %{qty: 3, price: 4.50},
+  active: true,
+  starts_at: DateTime.utc_now() |> DateTime.truncate(:second),
+  ends_at: DateTime.utc_now() |> DateTime.add(7, :day) |> DateTime.truncate(:second)
+})
+
+Kantox.Repo.insert!(%Kantox.Offer{
+  product_code: "CF1",
+  offer_type: "take_3_pay_for_2",
+  params: %{qty: 3, price: 22.46},
+  active: true,
+  starts_at: DateTime.utc_now() |> DateTime.truncate(:second),
+  ends_at: DateTime.utc_now() |> DateTime.add(7, :day) |> DateTime.truncate(:second)
+})
