@@ -34,6 +34,7 @@ services:
     command: >
       sh -c "
         /app/bin/kantox eval 'Kantox.Release.migrate' &&
+        /app/bin/kantox eval 'Kantox.Release.seed' &&
         /app/bin/server
       "
 
