@@ -5,9 +5,6 @@ defmodule Kantox.CashierServiceTest do
   alias Kantox.Products
 
   setup do
-    # Allow OffersCache GenServer to access the test's database connection
-    Ecto.Adapters.SQL.Sandbox.allow(Kantox.Repo, self(), Process.whereis(Kantox.OffersCache))
-
     # Create test products
     {:ok, _gr1} = Products.create(%{name: "Green Tea", code: "GR1", price: 3.11})
     {:ok, _sr1} = Products.create(%{name: "Strawberries", code: "SR1", price: 5.00})
@@ -44,8 +41,9 @@ defmodule Kantox.CashierServiceTest do
         ends_at: DateTime.utc_now() |> DateTime.add(7, :day) |> DateTime.truncate(:second)
       })
 
-    # Refresh cache to load offers from database within test transaction context
-    Kantox.OffersCache.refresh()
+    # Refresh caches to load data from database
+    Kantox.Cache.OffersCache.refresh_offers()
+    Kantox.Cache.ProductsCache.refresh_all()
 
     :ok
   end

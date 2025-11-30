@@ -12,8 +12,8 @@ defmodule Kantox.Application do
       Kantox.Repo,
       {DNSCluster, query: Application.get_env(:kantox, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Kantox.PubSub},
-      Kantox.OffersCache,
-      Kantox.ProductsCache,
+      # ETS Cache - must start before any cache consumers
+      Kantox.Cache.ETSCache,
       # Start a worker by calling: Kantox.Worker.start_link(arg)
       # {Kantox.Worker, arg},
       # Start to serve requests, typically the last entry

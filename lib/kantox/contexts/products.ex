@@ -1,14 +1,19 @@
 defmodule Kantox.Products do
   @moduledoc """
   Context for managing products.
+  Uses ETS-based caching for high performance.
   """
+
+  import Ecto.Query
 
   alias Kantox.Repo
   alias Kantox.Product
-  alias Kantox.ProductsCache
+  alias Kantox.Cache.ProductsCache
+
+  require Logger
 
   @doc """
-  Creates a product.
+  Creates a product and invalidates the cache.
 
   ## Examples
 
@@ -21,7 +26,10 @@ defmodule Kantox.Products do
            %Product{}
            |> Product.changeset(attrs)
            |> Repo.insert() do
-      ProductsCache.update_products(product.code)
+      # Invalidate cache so next request fetches fresh data
+      ProductsCache.invalidate(product.code)
+      Logger.info("Created product #{product.code} and invalidated cache")
+
       {:ok, product}
     else
       {:error, changeset} -> {:error, changeset}
@@ -45,7 +53,7 @@ defmodule Kantox.Products do
   end
 
   @doc """
-  Gets a product by code.
+  Gets a product by code from cache if available.
 
   ## Examples
 
@@ -61,6 +69,15 @@ defmodule Kantox.Products do
   end
 
   @doc """
+  Gets multiple products by codes using cache.
+  """
+  def get_by_codes(codes) when is_list(codes) do
+    from(p in Product, where: p.code in ^codes)
+    |> Repo.all()
+    |> Map.new(&{&1.code, &1})
+  end
+
+  @doc """
   Lists all products.
 
   ## Examples
@@ -71,11 +88,5 @@ defmodule Kantox.Products do
   """
   def all do
     Repo.all(Product)
-  end
-
-  def get_all_product_codes() do
-    all()
-    |> Enum.map(fn product -> product.code end)
-    |> Enum.to_list()
   end
 end

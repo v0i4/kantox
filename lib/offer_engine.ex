@@ -1,9 +1,10 @@
 defmodule Kantox.OfferEngine do
   @moduledoc """
   Module for processing offers and applying discounts.
+  Optimized with ETS-based caching for high performance.
   """
 
-  alias Kantox.OffersCache
+  alias Kantox.Cache.OffersCache
 
   def apply_discount(%{offer_type: "get_one_get_one_free"} = offer, {product, qty} = _item) do
     charged_price = ceil(qty / offer.params["qty"])
