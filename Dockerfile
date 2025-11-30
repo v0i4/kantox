@@ -84,6 +84,9 @@ ENV MIX_ENV="prod"
 # Only copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/kantox ./
 
+# Copy static files (like openapi.json) that are needed at runtime
+COPY --from=builder --chown=nobody:root /app/priv/static ./priv/static
+
 USER nobody
 
 # If using an environment that doesn't automatically reap zombie processes, it is

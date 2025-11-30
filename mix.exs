@@ -11,6 +11,7 @@ defmodule Kantox.MixProject do
       aliases: aliases(),
       listeners: [Phoenix.CodeReloader],
       deps: deps(),
+      releases: releases(),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         coveralls: :test,
@@ -80,6 +81,16 @@ defmodule Kantox.MixProject do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
+    ]
+  end
+
+  # Release configuration to include static files like openapi.json
+  defp releases do
+    [
+      kantox: [
+        include_executables_for: [:unix],
+        steps: [:assemble, :tar]
+      ]
     ]
   end
 end
