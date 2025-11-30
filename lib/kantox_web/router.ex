@@ -5,6 +5,20 @@ defmodule KantoxWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # API Documentation - serves openapi.json
+  scope "/api", KantoxWeb do
+    pipe_through :api
+    get "/openapi", ApiDocsController, :openapi
+  end
+
+  # Swagger UI
+  scope "/api/swagger" do
+    forward "/", PhoenixSwagger.Plug.SwaggerUI,
+      otp_app: :kantox,
+      swagger_file: "openapi.json"
+  end
+
+  # API Endpoints
   scope "/api", KantoxWeb do
     pipe_through :api
 

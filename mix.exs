@@ -62,7 +62,8 @@ defmodule Kantox.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:excoveralls, "~> 0.18.5"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:phoenix_swagger, "~> 0.8.5"}
     ]
   end
 

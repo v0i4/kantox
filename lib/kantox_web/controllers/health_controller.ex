@@ -9,4 +9,3 @@ defmodule KantoxWeb.HealthController do
     })
   end
 end
-

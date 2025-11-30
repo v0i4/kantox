@@ -1,0 +1,563 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Kantox API",
+    "version": "1.0.0",
+    "description": "API for managing products, offers, and processing shopping baskets with dynamic discount rules.\n\n## Features\n- Product management (list and create)\n- Offer/Promotion management with multiple discount types\n- Basket processing with automatic discount application\n\n## Offer Types\n- **get_one_get_one_free**: Buy 2, pay for 1\n- **bulk**: Buy N or more items at a special price per item\n- **take_3_pay_for_2**: Buy 3 pay for 2",
+    "contact": {
+      "name": "Kantox API Support",
+      "email": "support@kantox.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000",
+      "description": "Development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Health check endpoints"
+    },
+    {
+      "name": "Products",
+      "description": "Product management"
+    },
+    {
+      "name": "Offers",
+      "description": "Promotional offers management"
+    },
+    {
+      "name": "Baskets",
+      "description": "Shopping basket processing"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Root health check",
+        "description": "Returns the health status of the API",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "description": "Returns the health status of the API",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "List all products",
+        "description": "Returns a list of all products in the catalog",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductsResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Products"],
+        "summary": "Create a new product",
+        "description": "Creates a new product in the catalog",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductRequest"
+              },
+              "examples": {
+                "example1": {
+                  "summary": "Create Orange Juice",
+                  "value": {
+                    "product": {
+                      "name": "Orange Juice",
+                      "code": "OJ1",
+                      "price": 7.50
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/offers": {
+      "get": {
+        "tags": ["Offers"],
+        "summary": "List all offers",
+        "description": "Returns a list of all promotional offers",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OffersResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Offers"],
+        "summary": "Create a new offer",
+        "description": "Creates a new promotional offer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfferRequest"
+              },
+              "examples": {
+                "bogo": {
+                  "summary": "Buy One Get One Free",
+                  "value": {
+                    "offer": {
+                      "product_code": "GR1",
+                      "offer_type": "get_one_get_one_free",
+                      "params": {"qty": 2},
+                      "active": true,
+                      "starts_at": "2025-11-30T00:00:00Z",
+                      "ends_at": "2025-12-31T23:59:59Z"
+                    }
+                  }
+                },
+                "bulk": {
+                  "summary": "Bulk Discount",
+                  "value": {
+                    "offer": {
+                      "product_code": "SR1",
+                      "offer_type": "bulk",
+                      "params": {"qty": 3, "price": 4.50},
+                      "active": true,
+                      "starts_at": "2025-11-30T00:00:00Z",
+                      "ends_at": "2025-12-31T23:59:59Z"
+                    }
+                  }
+                },
+                "take3pay2": {
+                  "summary": "Buy 3 Pay for 2",
+                  "value": {
+                    "offer": {
+                      "product_code": "CF1",
+                      "offer_type": "take_3_pay_for_2",
+                      "params": {"qty": 3},
+                      "active": true,
+                      "starts_at": "2025-11-30T00:00:00Z",
+                      "ends_at": "2025-12-31T23:59:59Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Offer created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Offer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/baskets": {
+      "post": {
+        "tags": ["Baskets"],
+        "summary": "Process a shopping basket",
+        "description": "Processes a shopping basket and calculates the total price after applying all applicable offers",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BasketRequest"
+              },
+              "examples": {
+                "basket1": {
+                  "summary": "Basket with BOGO offer",
+                  "value": {
+                    "basket": ["GR1", "SR1", "GR1", "GR1", "CF1"]
+                  }
+                },
+                "basket2": {
+                  "summary": "Single item",
+                  "value": {
+                    "basket": ["GR1"]
+                  }
+                },
+                "basket3": {
+                  "summary": "Bulk discount",
+                  "value": {
+                    "basket": ["SR1", "SR1", "GR1", "SR1"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Basket total calculated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasketResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid basket",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok",
+            "description": "Service status"
+          },
+          "service": {
+            "type": "string",
+            "example": "Kantox API",
+            "description": "Service name"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Current timestamp"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "required": ["id", "name", "code", "price"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1,
+            "description": "Product ID"
+          },
+          "name": {
+            "type": "string",
+            "example": "Green Tea",
+            "description": "Product name"
+          },
+          "code": {
+            "type": "string",
+            "example": "GR1",
+            "description": "Product code (unique)"
+          },
+          "price": {
+            "type": "number",
+            "format": "float",
+            "example": 3.11,
+            "description": "Product price"
+          }
+        }
+      },
+      "ProductRequest": {
+        "type": "object",
+        "required": ["product"],
+        "properties": {
+          "product": {
+            "type": "object",
+            "required": ["name", "code", "price"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "Orange Juice",
+                "description": "Product name"
+              },
+              "code": {
+                "type": "string",
+                "example": "OJ1",
+                "description": "Product code (must be unique)"
+              },
+              "price": {
+                "type": "number",
+                "format": "float",
+                "example": 7.50,
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "description": "Product price (must be greater than 0)"
+              }
+            }
+          }
+        }
+      },
+      "ProductsResponse": {
+        "type": "object",
+        "required": ["data", "count"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            },
+            "description": "List of products"
+          },
+          "count": {
+            "type": "integer",
+            "example": 3,
+            "description": "Total number of products"
+          }
+        }
+      },
+      "Offer": {
+        "type": "object",
+        "required": ["id", "product_code", "offer_type", "params", "active", "starts_at", "ends_at"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1,
+            "description": "Offer ID"
+          },
+          "product_code": {
+            "type": "string",
+            "example": "GR1",
+            "description": "Product code this offer applies to"
+          },
+          "offer_type": {
+            "type": "string",
+            "enum": ["get_one_get_one_free", "bulk", "take_3_pay_for_2"],
+            "example": "get_one_get_one_free",
+            "description": "Type of promotional offer"
+          },
+          "params": {
+            "type": "object",
+            "example": {"qty": 2},
+            "description": "Offer parameters (varies by type)"
+          },
+          "active": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether the offer is currently active"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-11-30T00:00:00Z",
+            "description": "Offer start date"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-12-31T23:59:59Z",
+            "description": "Offer end date"
+          }
+        }
+      },
+      "OfferRequest": {
+        "type": "object",
+        "required": ["offer"],
+        "properties": {
+          "offer": {
+            "type": "object",
+            "required": ["product_code", "offer_type", "params", "active", "starts_at", "ends_at"],
+            "properties": {
+              "product_code": {
+                "type": "string",
+                "example": "GR1",
+                "description": "Product code"
+              },
+              "offer_type": {
+                "type": "string",
+                "enum": ["get_one_get_one_free", "bulk", "take_3_pay_for_2"],
+                "example": "get_one_get_one_free",
+                "description": "Type of offer"
+              },
+              "params": {
+                "type": "object",
+                "example": {"qty": 2},
+                "description": "Offer parameters (qty for BOGO/take3pay2, qty+price for bulk)"
+              },
+              "active": {
+                "type": "boolean",
+                "example": true,
+                "description": "Active status"
+              },
+              "starts_at": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2025-11-30T00:00:00Z",
+                "description": "Start date (ISO 8601)"
+              },
+              "ends_at": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2025-12-31T23:59:59Z",
+                "description": "End date (ISO 8601)"
+              }
+            }
+          }
+        }
+      },
+      "OffersResponse": {
+        "type": "object",
+        "required": ["data", "count"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Offer"
+            },
+            "description": "List of offers"
+          },
+          "count": {
+            "type": "integer",
+            "example": 3,
+            "description": "Total number of offers"
+          }
+        }
+      },
+      "BasketRequest": {
+        "type": "object",
+        "required": ["basket"],
+        "properties": {
+          "basket": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["GR1", "SR1", "GR1", "CF1"],
+            "description": "Array of product codes"
+          }
+        }
+      },
+      "BasketResponse": {
+        "type": "object",
+        "required": ["total", "status"],
+        "properties": {
+          "total": {
+            "type": "number",
+            "format": "float",
+            "example": 22.45,
+            "description": "Total price after discounts"
+          },
+          "status": {
+            "type": "string",
+            "example": "success",
+            "description": "Processing status"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "example": {
+              "name": ["can't be blank"],
+              "price": ["must be greater than 0"]
+            },
+            "description": "Validation errors by field"
+          },
+          "error": {
+            "type": "string",
+            "example": "Invalid basket",
+            "description": "Error message"
+          }
+        }
+      }
+    }
+  }
+}
+
