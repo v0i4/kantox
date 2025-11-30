@@ -41,6 +41,12 @@ config :phoenix, :json_library, Jason
 # PhoenixSwagger configuration (only for serving Swagger UI)
 config :phoenix_swagger, json_library: Jason
 
+# Hammer rate limiter configuration
+config :hammer,
+  backend:
+    {Hammer.Backend.ETS,
+     [expiry_ms: 60_000 * 60 * 2, cleanup_interval_ms: 60_000 * 10]}
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

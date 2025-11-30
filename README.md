@@ -52,6 +52,23 @@ When processing a basket, the API returns detailed pricing information:
 - `off_price` - Total discount amount applied
 - `status` - Processing status
 
+## Rate Limiting
+
+The API implements rate limiting on resource-intensive endpoints to prevent abuse and ensure system stability:
+
+- **Limit**: 100 requests per second per IP address
+- **Affected endpoints**: `POST /api/baskets`, `POST /api/products`, `POST /api/offers`
+- **Response when exceeded**: HTTP 429 (Too Many Requests)
+- **Headers**: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `Retry-After`
+
+Example rate limit response:
+```json
+{
+  "error": "Rate limit exceeded. Please try again later.",
+  "retry_after_seconds": 1
+}
+```
+
 ## Docker
 
 ### Starting the Application
@@ -140,3 +157,8 @@ Kantox.Products.create(%{code: "TEST", name: "Test", price: 1.0})
 Kantox.Cache.ProductsCache.get_by_code("TEST")
 # => %Product{code: "TEST", ...}
 `
+
+## Notes 
+
+* In a real world scenario, the API should be protected by a reverse proxy (e.g. Nginx) and a load balancer (e.g. Traefik) to distribute the requests among multiple nodes.
+* Currently, we cache all product codes. However, in a real-world scenario, we would likely have a cache more focused on the most popular products, which have a higher turnover rate.
