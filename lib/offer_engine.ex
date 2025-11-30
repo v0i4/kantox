@@ -2,6 +2,11 @@ defmodule Kantox.OfferEngine do
   @moduledoc """
   Module for processing offers and applying discounts.
   Optimized with ETS-based caching for high performance.
+
+  Returns a map with:
+  - `total` - Final price after all discounts
+  - `full_price` - Original price without discounts
+  - `off_price` - Total discount amount (full_price - total)
   """
 
   alias Kantox.Cache.OffersCache
@@ -33,23 +38,43 @@ defmodule Kantox.OfferEngine do
   def process(summarized_basket) do
     offers = OffersCache.get_offers()
 
+    full_price = get_full_price(summarized_basket)
+
+    final_price =
+      summarized_basket
+      |> Enum.map(fn item ->
+        {product, qty} = item
+
+        offer =
+          offers
+          |> Enum.find(fn offer ->
+            offer.product_code == product.code &&
+              offer.active == true &&
+              DateTime.compare(DateTime.utc_now(), offer.starts_at) == :gt &&
+              DateTime.compare(DateTime.utc_now(), offer.ends_at) == :lt
+          end)
+
+        case offer do
+          nil -> Decimal.mult(Decimal.from_float(product.price), qty)
+          _ -> apply_discount(offer, item)
+        end
+      end)
+      |> Enum.reduce(Decimal.new(0), &Decimal.add/2)
+      |> Decimal.to_float()
+
+    %{
+      total: final_price,
+      full_price: full_price,
+      off_price: Decimal.sub(Decimal.from_float(full_price), Decimal.from_float(final_price))
+                 |> Decimal.to_float()
+    }
+  end
+
+  def get_full_price(summarized_basket) do
     summarized_basket
     |> Enum.map(fn item ->
       {product, qty} = item
-
-      offer =
-        offers
-        |> Enum.find(fn offer ->
-          offer.product_code == product.code &&
-            offer.active == true &&
-            DateTime.compare(DateTime.utc_now(), offer.starts_at) == :gt &&
-            DateTime.compare(DateTime.utc_now(), offer.ends_at) == :lt
-        end)
-
-      case offer do
-        nil -> Decimal.mult(Decimal.from_float(product.price), qty)
-        _ -> apply_discount(offer, item)
-      end
+      Decimal.mult(Decimal.from_float(product.price), qty)
     end)
     |> Enum.reduce(Decimal.new(0), &Decimal.add/2)
     |> Decimal.to_float()

@@ -2,8 +2,8 @@ defmodule KantoxWeb.BasketController do
   use KantoxWeb, :controller
 
   def process(conn, %{"basket" => basket}) do
-    with {:ok, total} <- Kantox.CashierService.process(basket) do
-      render(conn, "index.json", %{total: total, status: "success"})
+    with {:ok, result} <- Kantox.CashierService.process(basket) do
+      render(conn, "index.json", %{result: result, status: "success"})
     else
       {:error, message} ->
         conn

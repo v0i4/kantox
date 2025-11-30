@@ -32,7 +32,25 @@ The API has complete interactive documentation:
 * `POST /api/products` - Create product
 * `GET /api/offers` - List offers
 * `POST /api/offers` - Create offer
-* `POST /api/baskets` - Process basket with discounts
+* `POST /api/baskets` - Process basket with discount details
+
+### Basket Processing Response
+
+When processing a basket, the API returns detailed pricing information:
+
+```json
+{
+  "total": 22.45,
+  "full_price": 25.56,
+  "off_price": 3.11,
+  "status": "success"
+}
+```
+
+- `total` - Final price after applying all discounts
+- `full_price` - Original price without any discounts
+- `off_price` - Total discount amount applied
+- `status` - Processing status
 
 ## Docker
 
@@ -82,10 +100,6 @@ Configure in `docker-compose.yml`:
 - `PHX_HOST` - Application hostname
 - `PHX_SERVER` - Enable Phoenix server (`true`)
 - `PORT` - Server port (default: 4000)
-
-## Additional Documentation
-
-* [Database Indexes](docs/DATABASE_INDEXES.md) - Database indexes documentation
 
 ## Tests and Code Quality
 

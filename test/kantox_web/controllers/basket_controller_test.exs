@@ -57,13 +57,15 @@ defmodule KantoxWeb.BasketControllerTest do
           basket: basket
         })
 
-      assert json_response(conn, 200) == %{
-               "total" => 3.11,
-               "status" => "success"
-             }
+      response = json_response(conn, 200)
+      assert response["total"] == 3.11
+      assert response["full_price"] == 6.22
+      assert response["off_price"] == 3.11
+      assert response["status"] == "success"
     end
 
     test "processes basket with multiple products", %{conn: conn} do
+      # GR1, SR1, CF1 without quantities to trigger discounts
       basket = ["GR1", "SR1", "CF1"]
 
       conn =
@@ -73,8 +75,9 @@ defmodule KantoxWeb.BasketControllerTest do
 
       response = json_response(conn, 200)
       assert response["status"] == "success"
-      assert is_float(response["total"])
-      assert response["total"] > 0
+      assert response["total"] == 19.34
+      assert response["full_price"] == 19.34
+      assert response["off_price"] == 0.0
     end
 
     test "processes basket with multiple quantities", %{conn: conn} do
@@ -89,6 +92,8 @@ defmodule KantoxWeb.BasketControllerTest do
       assert response["status"] == "success"
       # 4 GR1 with BOGOF = pay for 2 = 6.22
       assert response["total"] == 6.22
+      assert response["full_price"] == 12.44
+      assert response["off_price"] == 6.22
     end
 
     test "processes empty basket", %{conn: conn} do
@@ -100,6 +105,38 @@ defmodule KantoxWeb.BasketControllerTest do
       response = json_response(conn, 200)
       assert response["status"] == "success"
       assert response["total"] == 0.0
+      assert response["full_price"] == 0.0
+      assert response["off_price"] == 0.0
+    end
+
+    test "processes basket with bulk discount", %{conn: conn} do
+      basket = ["SR1", "SR1", "SR1"]
+
+      conn =
+        post(conn, ~p"/api/baskets", %{
+          basket: basket
+        })
+
+      response = json_response(conn, 200)
+      assert response["status"] == "success"
+      assert response["total"] == 13.5
+      assert response["full_price"] == 15.0
+      assert response["off_price"] == 1.5
+    end
+
+    test "processes basket with take_3_pay_for_2 discount", %{conn: conn} do
+      basket = ["CF1", "CF1", "CF1"]
+
+      conn =
+        post(conn, ~p"/api/baskets", %{
+          basket: basket
+        })
+
+      response = json_response(conn, 200)
+      assert response["status"] == "success"
+      assert response["total"] == 22.46
+      assert response["full_price"] == 33.69
+      assert response["off_price"] == 11.23
     end
   end
 end

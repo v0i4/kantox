@@ -10,23 +10,27 @@ defmodule Kantox.CashierService do
   @max_basket_size 1000
 
   @doc """
-  Processes a basket of product codes and returns the total price after applying offers.
+  Processes a basket of product codes and returns detailed pricing information.
 
   ## Examples
 
       iex> CashierService.process(["GR1", "SR1", "GR1", "CF1"])
-      {:ok, 22.45}
+      {:ok, %{
+        total: 22.45,
+        full_price: 25.56,
+        off_price: 3.11
+      }}
 
   """
   def process(basket) when is_list(basket) and length(basket) <= @max_basket_size do
     with {:ok, products_map} <- load_products(basket),
          true <- validate_basket(basket, products_map) do
-      total =
+      result =
         basket
         |> summarize(products_map)
         |> OfferEngine.process()
 
-      {:ok, total}
+      {:ok, result}
     else
       {:error, reason} ->
         {:error, reason}

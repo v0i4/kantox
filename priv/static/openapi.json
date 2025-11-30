@@ -518,13 +518,25 @@
       },
       "BasketResponse": {
         "type": "object",
-        "required": ["total", "status"],
+        "required": ["total", "full_price", "off_price", "status"],
         "properties": {
           "total": {
             "type": "number",
             "format": "float",
             "example": 22.45,
-            "description": "Total price after discounts"
+            "description": "Final price after applying all discounts"
+          },
+          "full_price": {
+            "type": "number",
+            "format": "float",
+            "example": 25.56,
+            "description": "Original price without any discounts"
+          },
+          "off_price": {
+            "type": "number",
+            "format": "float",
+            "example": 3.11,
+            "description": "Total discount amount applied (full_price - total)"
           },
           "status": {
             "type": "string",
