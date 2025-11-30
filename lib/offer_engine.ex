@@ -11,30 +11,6 @@ defmodule Kantox.OfferEngine do
 
   alias Kantox.Cache.OffersCache
 
-  def apply_discount(%{offer_type: "get_one_get_one_free"} = offer, {product, qty} = _item) do
-    charged_price = ceil(qty / offer.params["qty"])
-    Decimal.mult(product.price |> Decimal.from_float(), charged_price)
-  end
-
-  def apply_discount(%{offer_type: "bulk"} = offer, {product, qty} = _item) do
-    if qty >= offer.params["qty"] do
-      Decimal.mult(offer.params["price"] |> Decimal.from_float(), qty)
-    else
-      Decimal.mult(product.price |> Decimal.from_float(), qty)
-    end
-  end
-
-  def apply_discount(%{offer_type: "take_3_pay_for_2"} = offer, {product, qty} = _item) do
-    if qty >= offer.params["qty"] do
-      Decimal.mult(
-        qty,
-        Decimal.mult(Decimal.div(2, 3), product.price |> Decimal.from_float())
-      )
-    else
-      Decimal.mult(product.price |> Decimal.from_float(), qty)
-    end
-  end
-
   def process(summarized_basket) do
     offers = OffersCache.get_offers()
 
@@ -65,12 +41,37 @@ defmodule Kantox.OfferEngine do
     %{
       total: final_price,
       full_price: full_price,
-      off_price: Decimal.sub(Decimal.from_float(full_price), Decimal.from_float(final_price))
-                 |> Decimal.to_float()
+      off_price:
+        Decimal.sub(Decimal.from_float(full_price), Decimal.from_float(final_price))
+        |> Decimal.to_float()
     }
   end
 
-  def get_full_price(summarized_basket) do
+  defp apply_discount(%{offer_type: "get_one_get_one_free"} = offer, {product, qty} = _item) do
+    charged_price = ceil(qty / offer.params["qty"])
+    Decimal.mult(product.price |> Decimal.from_float(), charged_price)
+  end
+
+  defp apply_discount(%{offer_type: "bulk"} = offer, {product, qty} = _item) do
+    if qty >= offer.params["qty"] do
+      Decimal.mult(offer.params["price"] |> Decimal.from_float(), qty)
+    else
+      Decimal.mult(product.price |> Decimal.from_float(), qty)
+    end
+  end
+
+  defp apply_discount(%{offer_type: "take_3_pay_for_2"} = offer, {product, qty} = _item) do
+    if qty >= offer.params["qty"] do
+      Decimal.mult(
+        qty,
+        Decimal.mult(Decimal.div(2, 3), product.price |> Decimal.from_float())
+      )
+    else
+      Decimal.mult(product.price |> Decimal.from_float(), qty)
+    end
+  end
+
+  defp get_full_price(summarized_basket) do
     summarized_basket
     |> Enum.map(fn item ->
       {product, qty} = item
