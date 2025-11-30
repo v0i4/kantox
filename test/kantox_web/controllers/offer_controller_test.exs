@@ -150,6 +150,60 @@ defmodule KantoxWeb.OfferControllerTest do
       assert response["errors"]
     end
 
+    test "returns error when creating duplicate offer type for same product", %{conn: conn} do
+      # GR1 already has a "get_one_get_one_free" offer from setup
+      offer_params = %{
+        product_code: "GR1",
+        offer_type: "get_one_get_one_free",
+        params: %{qty: 2, price: 3.11},
+        active: true,
+        starts_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        ends_at: DateTime.utc_now() |> DateTime.add(7, :day) |> DateTime.truncate(:second)
+      }
+
+      conn = post(conn, ~p"/api/offers", offer: offer_params)
+
+      assert response = json_response(conn, 400)
+      assert response["errors"]
+      assert response["errors"]["product_code"] == ["offer type already exists for this product"]
+    end
+
+    test "allows creating different offer types for same product", %{conn: conn} do
+      # GR1 already has "get_one_get_one_free", but we can add a "bulk" offer
+      offer_params = %{
+        product_code: "GR1",
+        offer_type: "bulk",
+        params: %{qty: 3, price: 2.50},
+        active: true,
+        starts_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        ends_at: DateTime.utc_now() |> DateTime.add(7, :day) |> DateTime.truncate(:second)
+      }
+
+      conn = post(conn, ~p"/api/offers", offer: offer_params)
+
+      assert response = json_response(conn, 201)
+      assert response["product_code"] == "GR1"
+      assert response["offer_type"] == "bulk"
+    end
+
+    test "allows creating same offer type for different products", %{conn: conn} do
+      # CF1 doesn't have a "bulk" offer yet
+      offer_params = %{
+        product_code: "CF1",
+        offer_type: "bulk",
+        params: %{qty: 5, price: 9.00},
+        active: true,
+        starts_at: DateTime.utc_now() |> DateTime.truncate(:second),
+        ends_at: DateTime.utc_now() |> DateTime.add(7, :day) |> DateTime.truncate(:second)
+      }
+
+      conn = post(conn, ~p"/api/offers", offer: offer_params)
+
+      assert response = json_response(conn, 201)
+      assert response["product_code"] == "CF1"
+      assert response["offer_type"] == "bulk"
+    end
+
     test "creates inactive offer", %{conn: conn} do
       offer_params = %{
         product_code: "INACTIVE1",
